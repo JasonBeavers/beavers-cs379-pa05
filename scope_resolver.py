@@ -16,6 +16,26 @@ def resolve_name(
     call_stack: List[Environment],
     mode: str,
 ) -> int:
+
+    if mode not in ("static", "dynamic"):
+        raise ValueError(f"Invalid mode: {mode}. Mode must be either 'static' or 'dynamic'.")
+
+    if mode == "static":
+        return current_env.resolve(name)
+
+    elif mode == "dynamic":
+        for frame in reversed(call_stack):
+            if name in frame._names:
+                return frame._names[name]
+
+    global_env = current_env
+    while global_env.parent is not None:
+        global_env = global_env.parent
+
+    if name in global_env._names:
+        return global_env._names[name]
+
+    raise SemanticError(f"Name '{name}' is not defined.")
     """
     Return the declaration line `name` resolves to.
 
@@ -28,4 +48,4 @@ def resolve_name(
     cannot be resolved under the requested mode.
     """
     # TODO
-    raise NotImplementedError
+    # raise NotImplementedError
